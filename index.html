@@ -297,13 +297,13 @@
 
       <div class="card">
         <h3>Send Us a Message</h3>
-        <form onsubmit="submitMessage(event)">
-          <input type="text" placeholder="Your Name" required>
-          <input type="text" placeholder="Your Email or Phone Number" required>
-          <textarea rows="4" placeholder="Your Message" required></textarea>
+        <form id="contactForm" onsubmit="submitMessage(event)">
+          <input type="text" name="name" placeholder="Your Name" required>
+          <input type="text" name="contact" placeholder="Your Email or Phone Number" required>
+          <textarea name="message" rows="4" placeholder="Your Message" required></textarea>
           <button type="submit" class="form-btn">Send Message</button>
         </form>
-        <div id="contactStatus" style="color: var(--primary); font-weight: bold;"></div>
+        <div id="contactStatus" aria-live="polite" style="color: var(--primary); font-weight: bold;"></div>
       </div>
     </div>
   </main>
@@ -321,37 +321,57 @@
   <!-- Page Interactivity Scripts -->
   <script>
     function switchTab(pageId, btnElement) {
-      // Hide all pages
+      const targetPage = document.getElementById(pageId);
+      if (!targetPage) return;
+
       const pages = document.querySelectorAll('.page');
       pages.forEach(p => p.classList.remove('active-page'));
 
-      // Deactivate all buttons
       const buttons = document.querySelectorAll('.nav-btn');
       buttons.forEach(b => b.classList.remove('active'));
 
-      // Show selected page & activate button
-      document.getElementById(pageId).classList.add('active-page');
-      btnElement.classList.add('active');
+      targetPage.classList.add('active-page');
+      const activeButton = btnElement || document.querySelector(`.nav-btn[data-page="${pageId}"]`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
     }
 
     function calculateFee() {
-      const type = document.getElementById('studentType').value;
-      const level = document.getElementById('formLevel').value;
+      const type = document.getElementById('studentType')?.value || 'boarding';
+      const level = Number(document.getElementById('formLevel')?.value || '1');
+      const feeResult = document.getElementById('feeResult');
+
+      if (!feeResult) return;
+
       let total = 0;
 
       if (type === 'boarding') {
-        total = level === '3' ? 280000 : 250000;
+        total = level === 3 ? 280000 : 250000;
       } else {
-        total = level === '3' ? 140000 : 120000;
+        total = level === 3 ? 140000 : 120000;
       }
 
-      document.getElementById('feeResult').innerText = `MWK ${total.toLocaleString()}`;
+      feeResult.innerText = `MWK ${total.toLocaleString()}`;
     }
 
     function submitMessage(e) {
       e.preventDefault();
-      document.getElementById('contactStatus').innerText = 'Thank you! Your message has been submitted successfully.';
+
+      const form = e.target;
+      if (!form || !form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const contactStatus = document.getElementById('contactStatus');
+      if (contactStatus) {
+        contactStatus.innerText = 'Thank you! Your message has been submitted successfully.';
+      }
+      form.reset();
     }
+
+    window.addEventListener('DOMContentLoaded', calculateFee);
   </script>
 </body>
 </html>
